@@ -1,24 +1,24 @@
 // import dependencies
-var HTTP = require('http');
-var FS = require('fs');
-var PATH = require('path');
-var IO = require('socket.io');
-var OPEN = require('open');
-var OS = require('os');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const IO = require('socket.io');
+const OPEN = require('open');
+const OS = require('os');
 
 // Create a simple web server for both pages (deck and table)
-var server = HTTP.createServer(function (request, response) {
+const server = http.createServer(function (request, response) {
 
     // Serve different pages for Phone (deck) and Desktop/Tablet (table)
-    var filePath = '.' + request.url;
+    let filePath = '.' + request.url;
 
     if (request.url === '/' || request.url.startsWith('/?')) {
         filePath = './' + (request.url.startsWith('/?') ? 'deck.html' : 'table.html');
     }
 
     // Handle different file requests (just the required for this demo)
-    var extname = PATH.extname(filePath);
-    var contentType = 'text/html';
+    const extname = path.extname(filePath);
+    let contentType = 'text/html';
 
     switch (extname) {
         case '.js':
@@ -35,7 +35,7 @@ var server = HTTP.createServer(function (request, response) {
             break;   
     }
 
-    FS.readFile(filePath, function(error, content) {
+    fs.readFile(filePath, function(error, content) {
         if (error) {
             console.log("Resource not found: " + filePath + " from request: " + request.url );
             response.writeHead(404);
@@ -48,14 +48,14 @@ var server = HTTP.createServer(function (request, response) {
 });
 
 
-// HTTP server will listen on port 8080
-server.listen(8080);
+// http server will listen on port 3000
+server.listen(3000);
 
 // create a WebSocket listener for the same server
-var realtimeListener = IO.listen(server); 
+const realtimeListener = IO.listen(server); 
 
 // object to store table sockets
-var tableSockets = {};
+const tableSockets = {};
 
 realtimeListener.on('connection', function (socket) {
 
@@ -68,7 +68,7 @@ realtimeListener.on('connection', function (socket) {
 
     // receives a connect message from a phone
     socket.on("phone-connect", function (tableId) {
-        var tableSocket = tableSockets[tableId];
+        const tableSocket = tableSockets[tableId];
         if (tableSocket) {
             // ... informs table that a phone has connected
             tableSocket.emit('phone-connect');
@@ -77,7 +77,7 @@ realtimeListener.on('connection', function (socket) {
 
     // receives a move from a phone
     socket.on('phone-move', function (data) {
-        var tableSocket = tableSockets[data.tableId];
+        const tableSocket = tableSockets[data.tableId];
         if (tableSocket) {
             // ... and forwards the current angle to the card table
             tableSocket.emit('phone-move', data.angle);
@@ -86,7 +86,7 @@ realtimeListener.on('connection', function (socket) {
 
     // receives a throw card message from a phone
     socket.on('phone-throw-card', function (data) {
-        var tableSocket = tableSockets[data.tableId];
+        const tableSocket = tableSockets[data.tableId];
         if (tableSocket) {
             // ... and forwards the data to the card table
             tableSocket.emit('phone-throw-card', data);
@@ -105,11 +105,11 @@ realtimeListener.on('connection', function (socket) {
 
 // Get all internal IP addresses and open the Demo with that IP
 
-var interfaces = OS.networkInterfaces();
-var addresses = [];
-for (var k in interfaces) {
-    for (var k2 in interfaces[k]) {
-        var address = interfaces[k][k2];
+const interfaces = OS.networkInterfaces();
+const addresses = [];
+for (let k in interfaces) {
+    for (let k2 in interfaces[k]) {
+        let address = interfaces[k][k2];
         if (address.family === 'IPv4' && !address.internal) {
             addresses.push(address.address);
             console.log("Found internal IP address: " + address.address);
@@ -117,11 +117,11 @@ for (var k in interfaces) {
     }
 }
 
-console.log('Opening: http://' + addresses.sort()[0] + ':8080');
+console.log('Opening: http://' + addresses.sort()[0] + ':3000');
 
 // Open Demo on default browser:
 
-OPEN('http://' + addresses.sort()[0] + ':8080');
+OPEN('http://' + addresses.sort()[0] + ':3000');
 
 
 
